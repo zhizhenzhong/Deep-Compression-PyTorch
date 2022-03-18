@@ -8,8 +8,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from tqdm import tqdm
+import torchvision.models as models
 
-from net.models import LeNet
+from net.models import LeNet, LeNet_5
 from net.quantization import apply_weight_sharing
 import util
 
@@ -65,15 +66,38 @@ test_loader = torch.utils.data.DataLoader(
                    ])),
     batch_size=args.test_batch_size, shuffle=False, **kwargs)
 
+# train_loader = torch.utils.data.DataLoader(
+#     datasets.CIFAR10('data', train=True, download=True, transform=transforms.Compose([
+#                        transforms.RandomCrop(32, padding=4),
+#                        transforms.RandomHorizontalFlip(),
+#                        transforms.ToTensor(),
+#                        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+#                     ])),
+#     batch_size=args.batch_size, shuffle=True, **kwargs)
+
+# test_loader = torch.utils.data.DataLoader(
+#     datasets.CIFAR10('data', train=False, transform=transforms.Compose([
+#                        transforms.RandomCrop(32, padding=4),
+#                        transforms.RandomHorizontalFlip(),
+#                        transforms.ToTensor(),
+#                        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+#                     ])),
+#     batch_size=args.test_batch_size, shuffle=False, **kwargs)
+
 
 # Define which model to use
 model = LeNet(mask=True).to(device)
+# model = LeNet_5(mask=True).to(device)
+# model = models.resnet18(pretrained=False).to(device)
 
 print(model)
 util.print_model_parameters(model)
 
 # NOTE : `weight_decay` term denotes L2 regularization loss term
-optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=0.0001)
+# optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=0.0001)
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
+
 initial_optimizer_state_dict = optimizer.state_dict()
 
 def train(epochs):
@@ -126,7 +150,7 @@ print("--- Initial training ---")
 train(args.epochs)
 accuracy = test()
 util.log(args.log, f"initial_accuracy {accuracy}")
-torch.save(model, f"saves/initial_model.ptmodel")
+torch.save(model, f"saves/initial_lenet_model.ptmodel")
 print("--- Before pruning ---")
 util.print_nonzeros(model)
 
@@ -141,7 +165,7 @@ util.print_nonzeros(model)
 print("--- Retraining ---")
 optimizer.load_state_dict(initial_optimizer_state_dict) # Reset the optimizer
 train(args.epochs)
-torch.save(model, f"saves/model_after_retraining.ptmodel")
+torch.save(model, f"saves/model_lenet_after_retraining.ptmodel")
 accuracy = test()
 util.log(args.log, f"accuracy_after_retraining {accuracy}")
 

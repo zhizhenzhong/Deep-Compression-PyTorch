@@ -1,5 +1,7 @@
 # Created by https://www.gitignore.io/api/python
 data/
+saves/
+log.txt
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
