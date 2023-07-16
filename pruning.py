@@ -18,11 +18,11 @@ os.makedirs('saves', exist_ok=True)
 
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch MNIST pruning from deep compression paper')
-parser.add_argument('--batch-size', type=int, default=50, metavar='N',
-                    help='input batch size for training (default: 50)')
+parser.add_argument('--batch-size', type=int, default=200, metavar='N',
+                    help='input batch size for training (default: 200)')
 parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
                     help='input batch size for testing (default: 1000)')
-parser.add_argument('--epochs', type=int, default=100, metavar='N',
+parser.add_argument('--epochs', type=int, default=500, metavar='N',
                     help='number of epochs to train (default: 100)')
 parser.add_argument('--lr', type=float, default=0.01, metavar='LR',
                     help='learning rate (default: 0.01)')
@@ -94,9 +94,9 @@ print(model)
 util.print_model_parameters(model)
 
 # NOTE : `weight_decay` term denotes L2 regularization loss term
-# optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=0.0001)
+optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=0.0001)
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
+# optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
 
 initial_optimizer_state_dict = optimizer.state_dict()
 
